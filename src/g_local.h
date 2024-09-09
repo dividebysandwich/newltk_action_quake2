@@ -22,6 +22,19 @@
 #include "a_radio.h"
 //FIREBLADE
 
+//PG BUND - BEGIN
+#include "a_xcmds.h"
+#include "a_xgame.h"
+#include "g_xmisc.h"
+#include "a_tourney.h"
+#include "a_xvote.h"
+#include "a_xmenu.h"
+#include "a_ban.h"
+//PG BUND - END
+
+//Black Cross
+#include "a_vote.h"
+
 // the "gameversion" client command will print this plus compile date
 #define GAMEVERSION     "action"
 
@@ -296,6 +309,7 @@ typedef struct
         char            level_name[MAX_QPATH];  // the descriptive name (Outer Base, etc)
         char            mapname[MAX_QPATH];             // the server name (base1, etc)
         char            nextmap[MAX_QPATH];             // go here when fraglimit is hit
+        char            tempmap[MAX_QPATH];             //PG BUND
 
         // intermission state
         float           intermissiontime;               // time the intermission was started
@@ -502,6 +516,8 @@ extern  int     body_armor_index;
 #define MOD_BLEEDING            43      
 #define MOD_GAS                         44
 #define MOD_KICK                        45
+//PG BUND
+#define MOD_PUNCH                       50
 #define MOD_FRIENDLY_FIRE       0x8000000
 
 
@@ -545,6 +561,7 @@ extern  cvar_t  *actionversion;
 //FIREBLADE
 
 //Werewolf
+extern  cvar_t  *minplayers;
 extern  cvar_t  *newsounds;
 extern  cvar_t  *announcer;
 extern  cvar_t  *m4_spread;
@@ -552,6 +569,26 @@ extern  cvar_t  *mk23_spread;
 extern  cvar_t  *mp5_spread;
 extern  cvar_t  *dual_spread;
 extern  cvar_t  *ltk_jumpy;
+//End Werewolf
+
+//PG BUND - BEGIN
+extern  cvar_t  *use_voice;
+//extern  cvar_t  *use_friendlyfire;
+//extern  cvar_t  *ff_maxkills;
+//extern  cvar_t  *ff_kickat;
+//extern  cvar_t  *ff_tempban; // commented out since this is now in AQ 1.52 base code. -TempFile
+extern  cvar_t  *ppl_idletime;
+extern  cvar_t  *use_tourney;
+extern  cvar_t  *use_kickvote;
+
+//Black Cross
+extern	cvar_t	*use_mapvote;	// enable map voting
+//PG BUND - END
+
+//TempFile - BEGIN
+extern	cvar_t	*sv_gib;
+extern	cvar_t	*sv_allowcrlf;
+//TempFile - END
 
 extern  cvar_t  *skill;
 extern  cvar_t  *fraglimit;
@@ -641,6 +678,7 @@ typedef struct
 extern  field_t fields[];
 extern  gitem_t itemlist[];
 
+void CenterPrintAll(char *msg);
 
 //
 // g_cmds.c
@@ -921,6 +959,7 @@ typedef struct
         qboolean        spectator;
         int     firing_style;
 //FIREBLADE
+	int num_kills;	//TempFile
 } client_persistant_t;
 
 // client data that stays across deathmatch respawns
@@ -956,6 +995,20 @@ typedef struct
         int                     last_motd_refresh;
         edict_t   *last_chase_target;   // last person they chased, to resume at the same place later...
 //FIREBLADE
+
+//PG BUND - BEGIN
+	edict_t	*last_killed_target;
+	int	killed_teammates;
+  int idletime;
+  int tourneynumber;
+  edict_t *kickvote;
+  ignorelist_t ignorelist;
+
+  //Black Cross
+	char		*mapvote;		// pointer to map voted on (if any)
+//PG BUND - END
+
+
 //Action
         int                     mk23_mode; // firing mode, semi or auto
         int                     mp5_mode;
@@ -968,6 +1021,14 @@ typedef struct
         qboolean                radio_gender;       // radiogender
         qboolean                radio_power_off;    // radio_power
 //---
+//TempFile - BEGIN
+		int		fire_time;
+		int		ignore_time;	// framenum when the player called ignore - to prevent spamming
+		qboolean		weapon_after_bandage_warned;	// to fix message bug when
+												// calling weapon while bandaging
+		qboolean punch_desired;	//controlled in ClientThink
+		qboolean is_evil_teamkiller;
+
 } client_respawn_t;
 
 // this structure is cleared on each PutClientInServer(),
@@ -1130,6 +1191,10 @@ struct gclient_s
         int     chase_mode;
 //FIREBLADE     
 
+//TempFile
+		qboolean autoreloading;	//used for dual -> mk23 change with reloading
+//TempFile
+
 //AZEROV
         // Number of team kills this game
         int		team_kills;
@@ -1145,6 +1210,11 @@ struct gclient_s
 		// (getting at it later seems to be unreliable)
 		char	ipaddr[100];  // changed to 100  -FB
 //EEK
+//TempFile
+		int desired_zoom;	//either 0, 1, 2, 4 or 6
+		// This is set to 0 if no zooming shall be done, and is set to 0 after zooming
+		// is done.
+//TempFile
 };
 
 
@@ -1363,6 +1433,10 @@ struct edict_s
 	vec3_t	lastPosition; 
 // ACEBOT_END 
 
+        // PG BUND
+        xmenu_t *x_menu;
+
+
 };
 
 
@@ -1474,6 +1548,11 @@ bind 6 "use Sniper Rifle"
 #define LOC_LDAM 4 // legs
 
 
+//TempFile sniper zoom moved to constants
+#define SNIPER_FOV1	90
+#define SNIPER_FOV2	45
+#define SNIPER_FOV4	20
+#define SNIPER_FOV6	10
 
 // sniper modes
 #define SNIPER_1X 0

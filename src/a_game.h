@@ -2,7 +2,7 @@
  * Include for base Action game-related things
  */
 
-#define ACTION_VERSION  "1.52"
+#define ACTION_VERSION  "1.52 PB 1.24 LTK 6"
 
 extern char team1_name[];
 extern char team2_name[];
@@ -26,6 +26,18 @@ qboolean loc_CanSee(edict_t *, edict_t *);
 qboolean IsNeutral(edict_t *);
 qboolean IsFemale(edict_t *);
 void ParseSayText(edict_t *, char *);
+
+//PG BUND - BEGIN
+//void ParseSayText(edict_t *, char *);
+void GetWeaponName(edict_t *ent, char *buf);
+void GetItemName(edict_t *ent, char *buf);
+void GetHealth(edict_t *ent, char *buf);
+void GetAmmo(edict_t *ent, char *buf);
+void GetNearbyTeammates(edict_t *self, char *buf);
+//PG BUND - END
+
+//TempFile
+void GetLastLoss(edict_t *self, char *buf, char team);
 
 // Firing styles (where shots originate from)
 #define ACTION_FIRING_CENTER            0

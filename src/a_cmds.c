@@ -278,6 +278,16 @@ void Cmd_Reload_f (edict_t *ent)
                 }                       
                 if ( ent->client->curr_weap == DUAL_NUM )
                 {
+					//TempFile change to pistol, then reload
+					if(ent->client->pers.inventory[ent->client->ammo_index] == 1)
+					{
+						gitem_t* it;
+						it = FindItem(MK23_NAME);
+						it->use(ent, it);
+						ent->client->autoreloading = true;
+						return;
+					}
+					//TempFile
                         if (!(ent->client->pers.inventory[ent->client->ammo_index] >= 2))
                                 return;
 //FIREBLADE 7/11/1999 - stop reloading when weapon already full
@@ -310,12 +320,169 @@ void Cmd_Reload_f (edict_t *ent)
 }
 //+BD END CODE BLOCK
 
+//tempfile BEGIN
+/*
+Function _SetSniper
+(move to g_weapon.c?)
+Arguments:
+ent: client edict for which to set sniper mode
+zoom: zoom level to set. Set to 1, 2, 4 or 6.
+
+Return value: none
+  */
+void _SetSniper (edict_t *ent, int zoom)
+{
+	int desired_fov;
+	int sniper_mode;
+	int oldmode;
+	
+	if((zoom != 1) && (zoom != 2) && (zoom != 4) && (zoom != 6) && (ent->client->curr_weap != SNIPER_NUM))
+		return;
+
+	gi.sound(ent, CHAN_ITEM, gi.soundindex("misc/lensflik.wav"), 1, ATTN_NORM, 0);
+
+	oldmode = ent->client->resp.sniper_mode;
+
+	switch (zoom)
+	{
+	case 1:
+		desired_fov = SNIPER_FOV1;
+		sniper_mode = SNIPER_1X;
+		break;
+	case 2:
+		desired_fov = SNIPER_FOV2;
+		sniper_mode = SNIPER_2X;
+		break;
+	case 4:
+		desired_fov = SNIPER_FOV4;
+		sniper_mode = SNIPER_4X;
+		break;
+	case 6:
+		desired_fov = SNIPER_FOV6;
+		sniper_mode = SNIPER_6X;
+		break;
+	}
+
+	if(sniper_mode == oldmode)
+		return;
+
+	ent->client->resp.sniper_mode = sniper_mode;
+	ent->client->desired_fov = desired_fov;
+
+	if(sniper_mode == SNIPER_1X && ent->client->pers.weapon)
+		ent->client->ps.gunindex = gi.modelindex( ent->client->pers.weapon->view_model );
+		//show the model if switching to 1x
+
+	if(oldmode == SNIPER_1X)
+	{
+		//do idleness stuff when switching from 1x, see function below
+		ent->client->weaponstate = WEAPON_BUSY;
+		ent->client->idle_weapon = 6;
+		ent->client->ps.gunframe = 22;
+	}
+}
+//tempfile END
+
+
+
 void Cmd_New_Weapon_f( edict_t *ent )
 {
         ent->client->weapon_attempts++;
         if ( ent->client->weapon_attempts == 1 )
                 Cmd_Weapon_f(ent);
 }
+
+//TempFile BEGIN
+
+void _ZoomIn(edict_t* ent, qboolean overflow)
+{
+	switch(ent->client->resp.sniper_mode)
+	{
+	case SNIPER_1X:
+		ent->client->desired_zoom = 2;
+		break;
+	case SNIPER_2X:
+		ent->client->desired_zoom = 4;
+		break;
+	case SNIPER_4X:
+		ent->client->desired_zoom = 6;
+		break;
+	case SNIPER_6X:
+		if(overflow)
+			ent->client->desired_zoom = 1;
+		else
+			return;	// no more zooming can be done
+		break;
+	default:
+		return;
+	}
+
+	ent->client->weapon_attempts++;
+    if ( ent->client->weapon_attempts == 1 )
+            Cmd_Weapon_f(ent);
+}
+
+void _ZoomOut(edict_t* ent, qboolean overflow)
+{
+	switch(ent->client->resp.sniper_mode)
+	{
+	case SNIPER_1X:
+		if(overflow)
+			ent->client->desired_zoom = 6;
+		else
+			return;
+		break;
+	case SNIPER_2X:
+		ent->client->desired_zoom = 1;
+		break;
+	case SNIPER_4X:
+		ent->client->desired_zoom = 2;
+		break;
+	case SNIPER_6X:
+		ent->client->desired_zoom = 4;
+		break;
+	default:
+		return;
+	}
+
+	ent->client->weapon_attempts++;
+    if ( ent->client->weapon_attempts == 1 )
+            Cmd_Weapon_f(ent);
+}
+
+void Cmd_Lens_f(edict_t* ent)
+{
+	int nArg = atoi(gi.args());
+	char args[16];
+	strcpy(args, gi.args());
+
+	if(ent->client->curr_weap != SNIPER_NUM)
+		return;
+
+	if(nArg == 0)
+	{
+		//perhaps in or out? let's see.
+		if(Q_stricmp(args, "in") == 0)
+			_ZoomIn(ent, false);
+		else if(Q_stricmp(args, "out") == 0)
+			_ZoomOut(ent, false);
+		else
+			_ZoomIn(ent, true);
+
+		return;	// _ZoomX will call Cmd_Weapon_f
+	}
+
+	if(nArg == 0)
+		return;
+	else if((nArg == 1) || (!(nArg % 2) && (nArg <= 6)))
+		ent->client->desired_zoom = nArg;
+
+	ent->client->weapon_attempts++;
+    if ( ent->client->weapon_attempts == 1 )
+            Cmd_Weapon_f(ent);
+}
+
+//TempFile END
 
 
 // function to change the firing mode of weapons (when appropriate) 
@@ -330,13 +497,18 @@ void Cmd_Weapon_f ( edict_t *ent )
         if ( ent->client->weapon_attempts < 0 )
                         ent->client->weapon_attempts = 0;
                 
-                if ( ent->client->bandaging || ent->client->bandage_stopped )
+                if (ent->client->bandaging || ent->client->bandage_stopped)
         {
-                
-                                safe_cprintf(ent, PRINT_HIGH, "You'll get to your weapon when your done bandaging!\n");
+				if(!(ent->client->resp.weapon_after_bandage_warned))
+				{
+					ent->client->resp.weapon_after_bandage_warned = true;
+                    gi.cprintf(ent, PRINT_HIGH, "You'll get to your weapon when you're done bandaging!\n");
+				}
                 ent->client->weapon_attempts++;
                                 return;
         }
+
+		ent->client->resp.weapon_after_bandage_warned = false;
 
                 if ( ent->client->weaponstate == WEAPON_FIRING || ent->client->weaponstate == WEAPON_BUSY )
                 {
@@ -380,6 +552,12 @@ void Cmd_Weapon_f ( edict_t *ent )
         {
                 if (dead)
                    return;
+		if(ent->client->desired_zoom) // we know what we want to do
+		{
+			_SetSniper(ent, ent->client->desired_zoom);
+			ent->client->desired_zoom = 0;
+		}
+		else
                 if ( ent->client->resp.sniper_mode == SNIPER_1X )
                 {
                         gi.sound(ent, CHAN_ITEM, gi.soundindex("misc/lensflik.wav"), 1, ATTN_NORM, 0);                    

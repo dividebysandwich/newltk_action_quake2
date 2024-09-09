@@ -593,7 +593,6 @@ void ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team)
 	VectorClear(bot->lastSeen);
 	bot->cansee = false;
 
-
 	bot->bot_strafe = SPEED_WALK;
 	bot->bot_speed = 0;
 	VectorClear(bot->lastPosition);
@@ -1113,6 +1112,7 @@ void ACESP_RemoveBot(char *name)
 	qboolean freed=false;
 	edict_t *bot;
 
+//	if (name!=NULL)
 	for(i=0;i<maxclients->value;i++)
 	{
 		bot = g_edicts + i + 1;
@@ -1133,9 +1133,25 @@ void ACESP_RemoveBot(char *name)
 		}
 	}
 
+/*
+	//Werewolf: Remove a random bot if no name given
 	if(!freed)	
-		safe_bprintf (PRINT_MEDIUM, "%s not found\n", name);
-	
+//		safe_bprintf (PRINT_MEDIUM, "%s not found\n", name);
+	{
+		do
+		{
+			i = (int)(rand()) % (int)(maxclients->value);
+			bot = g_edicts + i + 1;
+		}	while ( (!bot->inuse) || (!bot->is_bot) );
+		bot->health = 0;
+		player_die (bot, bot, bot, 100000, vec3_origin);
+		freed = true;
+		ClientDisconnect( bot );
+	}
+*/
+	if(!freed)	
+		safe_bprintf (PRINT_MEDIUM, "No bot removed\n", name);
+
 //	ACESP_SaveBots(); // Save them again
 }
 

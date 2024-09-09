@@ -47,6 +47,7 @@ int stopAP;
 edict_t         *g_edicts;
 
 //Werewolf
+cvar_t  *minplayers;
 cvar_t  *newsounds;
 cvar_t  *announcer;
 cvar_t  *m4_spread;
@@ -54,6 +55,21 @@ cvar_t  *mk23_spread;
 cvar_t  *mp5_spread;
 cvar_t  *dual_spread;
 cvar_t  *ltk_jumpy;
+
+//PG BUND - BEGIN
+cvar_t  *use_voice;
+cvar_t  *ppl_idletime;
+cvar_t  *use_tourney;
+cvar_t  *use_kickvote;
+//PG BUND - END
+// tempfile
+cvar_t	*sv_gib;
+cvar_t	*sv_allowcrlf;
+// tempfile
+
+//Black Cross - Begin
+cvar_t	*use_mapvote;
+//Black Cross - End
 
 //FIREBLADE
 cvar_t  *hostname;
@@ -156,6 +172,8 @@ void ShutdownGame (void)
 // ACEBOT ADD
 		ACECM_Store();
 // ACEBOT END
+//PG BUND
+        vExitGame();        
 
         gi.FreeTags (TAG_LEVEL);
         gi.FreeTags (TAG_GAME);
@@ -267,8 +285,9 @@ extern void UnBan_TeamKillers (void);
 
 void EndDMLevel (void)
 {
-        edict_t *ent;
+        edict_t *ent = NULL;
         char *nextmapname = NULL;
+		qboolean byvote = false;
 // ACEBOT ADD
 		ACECM_Store();
 // ACEBOT END
@@ -313,7 +332,19 @@ void EndDMLevel (void)
                 nextmapname = ent->map = level.nextmap;
         }
 
-        if (level.nextmap != NULL)
+//PG BUND - BEGIN
+  level.tempmap[0] = '\0';
+  vExitLevel(level.tempmap);
+  if (level.tempmap[0])
+  {
+    // change to new map...
+	  byvote = true;
+	nextmapname = ent->map = level.tempmap;	// TempFile added ent->map to fit 1.52 EndDMLevel() conventions
+    if (level.nextmap != NULL)
+      level.nextmap[0] = '\0';    
+  } 
+//PG BUND - END
+        if (level.nextmap != NULL && !byvote)
         {
                 safe_bprintf(PRINT_HIGH, "Next map in rotation is %s.\n",
                         level.nextmap);
@@ -361,6 +392,13 @@ void CheckDMRules (void)
                         }
                 }
 //FIREBLADE
+//PG BUND - BEGIN
+    if (vCheckVote() == true)
+    {
+		  EndDMLevel ();
+		  return;      
+    }
+//PG BUND - END
         }
 
         if (fraglimit->value)

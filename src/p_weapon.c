@@ -1216,14 +1216,14 @@ void Weapon_Generic (edict_t *ent, int FRAME_ACTIVATE_LAST, int FRAME_FIRE_LAST,
                         case MP5_NUM:
                                 {
                                         if(ent->client->ps.gunframe == 55)
-											if (newsounds->value)
-                                                gi.sound(ent, CHAN_WEAPON, gi.soundindex("ltkwep/mp5out.wav"), 1, ATTN_NORM, 0);
-											else
+//											if (newsounds->value)
+//                                                gi.sound(ent, CHAN_WEAPON, gi.soundindex("ltkwep/mp5out.wav"), 1, ATTN_NORM, 0);
+//											else
 												gi.sound(ent, CHAN_WEAPON, gi.soundindex("weapons/mp5out.wav"), 1, ATTN_NORM, 0);
                                         else if(ent->client->ps.gunframe == 59)
-											if (newsounds->value)
-                                                gi.sound(ent, CHAN_WEAPON, gi.soundindex("ltkwep/mp5in.wav"), 1, ATTN_NORM, 0);                               
-											else
+//											if (newsounds->value)
+//                                                gi.sound(ent, CHAN_WEAPON, gi.soundindex("ltkwep/mp5in.wav"), 1, ATTN_NORM, 0);                               
+//											else
                                                 gi.sound(ent, CHAN_WEAPON, gi.soundindex("weapons/mp5in.wav"), 1, ATTN_NORM, 0);                               
                                         else if(ent->client->ps.gunframe == 63) //61
 											if (newsounds->value)

@@ -200,7 +200,7 @@ void DeathmatchScoreboardMessage (edict_t *ent, edict_t *killer)
 // ACEBOT_END
 
 //FIREBLADE
-        if (teamplay->value) {
+        if (teamplay->value && !use_tourney->value) {
                 A_ScoreboardMessage (ent, killer);
                 return;
         }

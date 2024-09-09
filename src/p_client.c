@@ -450,6 +450,44 @@ qboolean IsNeutral (edict_t *ent)
 
 // PrintDeathMessage: moved the actual printing of the death messages to here, to handle
 //  the fact that live players shouldn't receive them in teamplay.  -FB
+/*void PrintDeathMessage(char *msg, edict_t *gibee)
+{
+        int j;
+        edict_t *other;
+        
+        if (!teamplay->value)
+        {
+                safe_bprintf(PRINT_MEDIUM, msg);
+                return;
+        }
+        
+        if (dedicated->value)
+                safe_cprintf(NULL, PRINT_MEDIUM, "%s", msg);
+        // First, let's print the message for gibee and its attacker. -TempFile
+
+		if (gibee->inuse && gibee->client)
+		if (!gibee->is_bot)
+			safe_cprintf(gibee, PRINT_MEDIUM, "%s", msg);
+		
+		if (gibee->client->attacker->inuse && gibee->client->attacker->client)
+		if (!gibee->client->attacker->is_bot)
+			safe_cprintf(gibee->client->attacker, PRINT_MEDIUM, "%s", msg);
+        
+        for (j = 1; j <= game.maxclients; j++)
+        {
+                other = &g_edicts[j];
+                if (!other->inuse || !other->client || other->is_bot)
+                        continue;
+				// only print if he's NOT gibee, NOT attacker, and NOT alive! -TempFile
+
+                if (other != gibee && 
+					other != gibee->client->attacker &&
+					team_round_going && other->solid == SOLID_NOT)
+					safe_cprintf(other, PRINT_MEDIUM, "%s", msg);
+        }
+}
+*/
+
 void PrintDeathMessage(char *msg, edict_t *gibee)
 {
         int j;
@@ -467,13 +505,14 @@ void PrintDeathMessage(char *msg, edict_t *gibee)
         for (j = 1; j <= game.maxclients; j++)
         {
                 other = &g_edicts[j];
-                if (!other->inuse || !other->client)
+                if (!other->inuse || !other->client || other->is_bot)
                         continue;
                 if (gibee != other && team_round_going && other->solid != SOLID_NOT)
                         continue;
                 safe_cprintf(other, PRINT_MEDIUM, "%s", msg);
         }
 }
+
 
 void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 {
@@ -637,6 +676,9 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
                                         	Add_Frag(self->client->attacker );//attacker->client->resp.score++;
                                 }
 //END FF ADD
+        //PG BUND - BEGIN 
+        self->client->attacker->client->resp.last_killed_target = self;
+        //PG BUND - END 
                         }
                         else
                         {
@@ -667,6 +709,9 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
                 self->enemy = attacker;
                 if (attacker && attacker->client)
                 {
+      //PG BUND - BEGIN 
+      attacker->client->resp.last_killed_target = self;
+      //PG BUND - END 
                         switch (mod)
                         {
                         case MOD_MK23:  // zucc
@@ -947,6 +992,24 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
                                 	}
                                 }
 				break;
+//PG BUND - BEGIN
+      case MOD_PUNCH:
+        n = rand() % 3 + 1;
+        if (n == 1)
+        {
+          message = " got a free facelift by";
+        }
+        else if (n == 2)
+        {
+          message = " was knocked out by";
+        }
+        else
+        {
+          message = " caught";
+          message2 = "'s iron fist";
+        }                 
+        break;
+//PG BUND - END
 			case MOD_BLASTER:
                                 message = "was blasted by";
                                 break;
@@ -1040,6 +1103,7 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
                                                 if (!teamplay->value || mod != MOD_TELEFRAG)
 //FIREBLADE
                                                 	Add_Frag(attacker );//attacker->client->resp.score++;
+					attacker->client->pers.num_kills++;	//TempFile
                                         }
                                 }
                                 return;
@@ -1320,6 +1384,10 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 
                 self->client->reload_attempts = 0; // stop them from trying to reload
                 self->client->weapon_attempts = 0;
+	//TempFile
+		self->client->desired_zoom = 0;
+		self->client->autoreloading = false;
+	//TempFile
 
         self->maxs[2] = -8;
 
@@ -1416,16 +1484,42 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
                                 self->client->anim_end = FRAME_death308;
                                 break;
                         }
-                                                if ((meansOfDeath == MOD_SNIPER) || (meansOfDeath == MOD_KNIFE) || (meansOfDeath == MOD_KNIFE_THROWN))
-                                                        gi.sound(self, CHAN_VOICE, gi.soundindex("misc/glurp.wav"), 1, ATTN_NORM, 0);                
-                                                else
-                                                        gi.sound (self, CHAN_VOICE, gi.soundindex(va("*death%i.wav", (rand()%4)+1)), 1, ATTN_NORM, 0);
+            if ((meansOfDeath == MOD_SNIPER) || (meansOfDeath == MOD_KNIFE) || (meansOfDeath == MOD_KNIFE_THROWN))
+			{
+              gi.sound(self, CHAN_VOICE, gi.soundindex("misc/glurp.wav"), 1, ATTN_NORM, 0);                
+// TempFile - BEGIN sniper gibbing
+			  if (meansOfDeath == MOD_SNIPER)
+			  {	
+				  int n;
+				  switch(locOfDeath)
+				  {
+				  case LOC_HDAM:
+					  if(sv_gib->value)
+					  {
+						for (n = 0; n < 8; n++)
+							ThrowGib (self, "models/objects/gibs/sm_meat/tris.md2", damage, GIB_ORGANIC);
+						ThrowClientHead(self, damage);
+					  }
+				  }				 
+			  }
+			}
+		
+//TempFile - END
+            else
+              gi.sound (self, CHAN_VOICE, gi.soundindex(va("*death%i.wav", (rand()%4)+1)), 1, ATTN_NORM, 0);
                 }
         }
                 // zucc this will fix a jump kick death generating a weapon
-                self->client->curr_weap = MK23_NUM;
-        self->deadflag = DEAD_DEAD;
+        self->client->curr_weap = MK23_NUM;
+//PG BUND - BEGIN
+        self->client->resp.idletime = 0;
+        self->client->resp.last_killed_target = NULL;
+//PG BUND - END        
 
+//TempFile
+		self->client->pers.num_kills = 0;
+//TempFile
+        self->deadflag = DEAD_DEAD;
         gi.linkentity (self);
 }
 
@@ -1492,6 +1586,17 @@ void InitClientResp (gclient_t *client)
         client->resp.weapon = FindItem(MP5_NAME);
         client->resp.item = FindItem(KEV_NAME);
         client->resp.ir = 1;
+
+//TempFile - BEGIN
+		client->resp.punch_desired = false;
+		client->resp.fire_time = 0;
+		client->resp.ignore_time = 0;
+		client->pers.num_kills = 0;
+//TempFile - END
+//PG BUND - BEGIN
+  client->resp.last_killed_target = NULL;
+  client->resp.idletime = 0;
+//PG BUND - END
 }
 
 /*
@@ -1803,17 +1908,16 @@ void InitBodyQue (void)
 
 void body_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damage, vec3_t point)
 {
-      int     n;
+//      int     n;
 
         if (self->health < -40)
         {
                         // remove gibbing
-				//Reenabled by Werewolf
-                gi.sound (self, CHAN_BODY, gi.soundindex ("misc/udeath.wav"), 1, ATTN_NORM, 0);
+/*                gi.sound (self, CHAN_BODY, gi.soundindex ("misc/udeath.wav"), 1, ATTN_NORM, 0);
                 for (n= 0; n < 4; n++)
                         ThrowGib (self, "models/objects/gibs/sm_meat/tris.md2", damage, GIB_ORGANIC);
                 self->s.origin[2] -= 48;
-                ThrowClientHead (self, damage);
+                ThrowClientHead (self, damage);*/
                 self->takedamage = DAMAGE_NO;
         }
 }
@@ -1858,6 +1962,10 @@ void CopyToBodyQue (edict_t *ent)
 
         body->die = body_die;
         body->takedamage = DAMAGE_YES;
+//PG BUND - BEGIN
+  //Disable to be seen by irvision
+  body->s.renderfx &= ~RF_IR_VISIBLE;
+//PG BUND - END
 
         gi.linkentity (body);
 }
@@ -1894,7 +2002,10 @@ void respawn (edict_t *self)
                 if (self->solid != SOLID_NOT || self->deadflag == DEAD_DEAD)
 //FIREBLADE
                         CopyToBodyQue (self);
-                PutClientInServer (self);
+//		if( !stricmp(self->classname, "bot") )
+//			ACESP_PutClientInServer( self, true,self->client->resp.team);
+//		else
+			PutClientInServer(self);
 
 //FIREBLADE
                 self->svflags &= ~SVF_NOCLIENT;
@@ -2374,6 +2485,10 @@ void PutClientInServer (edict_t *ent)
         client->have_laser = 0; 
                 client->reload_attempts = 0;
                 client->weapon_attempts = 0;
+//TempFile
+		client->desired_zoom = 0;
+		client->autoreloading = false;
+//TempFile
 
 //FIREBLADE
         if (!going_observer)    
@@ -2432,15 +2547,27 @@ void ClientBeginDeathmatch (edict_t *ent)
 //	static char current_map[55];	// moved GLOBAL
 // ACEBOT_END
 
+
 	G_InitEdict (ent);
+    ent->classname = "player";
 
 	InitClientResp (ent->client);
+//PG BUND - BEGIN
+        ent->client->resp.last_killed_target = NULL;
+        ent->client->resp.killed_teammates = 0;
+        ent->client->resp.idletime = 0;
+        TourneyNewPlayer(ent);
+        vInitClient(ent);
+//PG BUND - END
 
 // ACEBOT_ADD
 	ACEIT_PlayerAdded(ent);
 // ACEBOT_END
         // locate ent at a spawn point
-        PutClientInServer (ent);
+		if( !stricmp(ent->classname, "bot") )
+			ACESP_PutClientInServer( ent, true,ent->client->resp.team);
+		else
+			PutClientInServer(ent);
 		
 // FROM 3.20 -FB
         if (level.intermissiontime)
@@ -2481,7 +2608,12 @@ void ClientBeginDeathmatch (edict_t *ent)
 		ACEND_LoadNodes();
 //		ACESP_LoadBots();
 		ACESP_LoadBotConfig();
-		strcpy(current_map,level.mapname);
+/*		if ((minplayers->value) && (!ent->is_bot) && (maxclients->value > 1))
+		{
+			for (tempi=0; tempi<minplayers->value; tempi++)
+				ACESP_SpawnBot( (int)rand() % 1, NULL, NULL, NULL);
+		}
+*/		strcpy(current_map,level.mapname);
 	}
 
 // ACEBOT_END
@@ -2521,6 +2653,19 @@ void ClientBegin (edict_t *ent)
                 ClientBeginDeathmatch (ent);
                 return;
         }
+        else
+        {
+          
+//PG BUND - BEGIN
+          ent->client->resp.last_killed_target = NULL;
+          ent->client->resp.killed_teammates = 0;
+          ent->client->resp.idletime = 0;
+          TourneyNewPlayer(ent);  
+          
+          // client voting initialization
+          vInitClient(ent);
+//PG BUND - END          
+        }
 
         // if there is already a body waiting for us (a loadgame), just
         // take it, otherwise spawn one from scratch
@@ -2541,7 +2686,10 @@ void ClientBegin (edict_t *ent)
                 G_InitEdict (ent);
                 ent->classname = "player";
                 InitClientResp (ent->client);
-                PutClientInServer (ent);
+		if( !stricmp(ent->classname, "bot") )
+			ACESP_PutClientInServer( ent, true,ent->client->resp.team);
+		else
+			PutClientInServer(ent);
         }
 
         if (level.intermissiontime)
@@ -2564,6 +2712,8 @@ void ClientBegin (edict_t *ent)
                         }
 
                         safe_bprintf (PRINT_HIGH, "%s entered the game\n", ent->client->pers.netname);
+//						if (!ent->is_bot)
+//							ACESP_RemoveBot(NULL);
                 }
         }
 
@@ -2594,7 +2744,12 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
 
         // set name
         s = Info_ValueForKey (userinfo, "name");
-        strncpy (ent->client->pers.netname, s, sizeof(ent->client->pers.netname)-1);
+
+		// on the initial update, we won't broadcast the message.
+		if((Q_stricmp(ent->client->pers.netname, "") != 0)
+			&& (Q_stricmp(ent->client->pers.netname, s) != 0))
+			gi.bprintf(PRINT_MEDIUM, "%s is now known as %s.\n", ent->client->pers.netname, s); //TempFile
+		strncpy (ent->client->pers.netname, s, sizeof(ent->client->pers.netname)-1);
 
 //FIREBLADE     
         s = Info_ValueForKey(userinfo, "spectator");
@@ -2610,7 +2765,7 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
 
         // combine name and skin into a configstring
 //FIREBLADE
-        if (teamplay->value)
+        if (teamplay->value && !use_tourney->value)
                 AssignSkin(ent, s);
                 else
 //FIREBLADE
@@ -2693,6 +2848,8 @@ qboolean ClientConnect (edict_t *ent, char *userinfo)
         }
 // ^^^
 
+        if (vClientConnect(ent, userinfo) == false)
+          return false;
         // they can connect
         ent->client = game.clients + (ent - g_edicts - 1);
 
@@ -2786,8 +2943,22 @@ void ClientDisconnect (edict_t *ent)
                 {
                         if ( etemp->client->attacker == ent )
                                 etemp->client->attacker = NULL;
+//PG BUND - BEGIN 
+            if (etemp->client)
+            {
+              if (etemp->client->resp.last_killed_target == ent)
+                etemp->client->resp.last_killed_target = NULL;
+            }
+//PG BUND - END 
                 }
         }
+
+//PG BUND - BEGIN 
+  TourneyRemovePlayer(ent);
+  // client voting disconnect
+  vClientDisconnect(ent);
+//PG BUND - END 
+
         if (!teamplay->value)
         {  //FB 5/31/99
                 // send effect
@@ -2807,8 +2978,12 @@ void ClientDisconnect (edict_t *ent)
         playernum = ent-g_edicts-1;
         gi.configstring (CS_PLAYERSKINS+playernum, "");
 
+//		if (!ent->is_bot) 
+//			if (minplayers->value)
+//				ACESP_SpawnBot (NULL, NULL, NULL, NULL);
+
 //FIREBLADE
-        if (teamplay->value)
+        if (teamplay->value && !use_tourney->value)
         {
                 CheckForUnevenTeams();
         }
@@ -2876,7 +3051,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
         }
 
 //FIREBLADE
-        if ((int)motd_time->value > (client->resp.motd_refreshes * 2))
+  if ((int)motd_time->value > (client->resp.motd_refreshes * 2) && !(client->menu))
         {
                 if (client->resp.last_motd_refresh < (level.framenum - 20))
                 {
@@ -3109,7 +3284,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
         // monster sighting AI
         ent->light_level = ucmd->lightlevel;
 
-        // fire weapon from final position if needed
+/*        // fire weapon from final position if needed
         if ((client->latched_buttons & BUTTON_ATTACK)
            //Black Cross - Begin
             || (((limchasecam->value && !client->chase_mode) ||
@@ -3118,7 +3293,17 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
                 !(limchasecam->value == 2 && client->chase_mode == 2))
            //Black Cross - End 
            )
+*/
+	  // fire weapon from final position if needed
+
+
+	if (client->latched_buttons & BUTTON_ATTACK)
         {
+	  //TempFile
+	  //We're gonna fire in this frame? Then abort any punching.
+	  client->resp.fire_time = level.framenum;
+	  client->resp.punch_desired = false;
+	  //TempFile
                 if (ent->solid == SOLID_NOT && ent->deadflag != DEAD_DEAD)
                 {
                         client->latched_buttons = 0;
@@ -3202,6 +3387,53 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
                         UpdateChaseCam(other);
         }
 // ^^^
+//PG BUND - BEGIN
+  if (ppl_idletime->value)
+  { 
+    if  (ent->solid != SOLID_NOT && ent->deadflag != DEAD_DEAD)
+    {
+      if (ucmd->forwardmove == 0 && ucmd->sidemove == 0)
+      {
+        if (client->resp.idletime)
+        {
+          if (level.time >= client->resp.idletime + ppl_idletime->value)
+          {                           
+            PlayRandomInsaneSound(ent);
+            client->resp.idletime = 0;
+          }
+        } 
+        else
+        {
+          client->resp.idletime = level.time;
+        }
+      }
+      else 
+        client->resp.idletime = 0;
+    }    
+  }
+//PG BUND - END
+
+  //TempFile - BEGIN
+  if(ent->solid != SOLID_NOT && ent->deadflag != DEAD_DEAD)
+  {
+	  if(client->resp.punch_desired)
+	  {
+		  client->resp.punch_desired = false;
+		  if(level.framenum > (client->resp.fire_time + PUNCH_DELAY))
+		  {
+			  client->resp.fire_time = level.framenum;	// you aren't Bruce Lee! :)
+			  punch_attack(ent);
+		  }
+	  }
+  }
+
+  if(ent->client->autoreloading && (ent->client->weaponstate == WEAPON_END_MAG)
+	  && (ent->client->curr_weap == MK23_NUM))
+  {
+	  ent->client->autoreloading = false;
+	  Cmd_New_Reload_f(ent);
+  }
+  //TempFile - END
 }
 
 
@@ -3252,15 +3484,30 @@ void ClientBeginServerFrame (edict_t *ent)
                         {
                                 if (ent->movetype != MOVETYPE_NOCLIP)  // have we already done this?  see above...
                                 {
-                                        CopyToBodyQue(ent);
-                                        ent->solid = SOLID_NOT;
-                                        ent->svflags |= SVF_NOCLIENT;
-                                        ent->movetype = MOVETYPE_NOCLIP;
-                                        ent->client->pers.health = 100;
-                                        ent->health = 100;
-                                        ent->deadflag = DEAD_NO;
-                                        gi.linkentity(ent);
-                                        safe_bprintf(PRINT_HIGH, "%s became a spectator\n", ent->client->pers.netname);
+										if (!ent->is_bot)
+										{
+											CopyToBodyQue(ent);
+											ent->solid = SOLID_NOT;
+											ent->svflags |= SVF_NOCLIENT;
+											ent->movetype = MOVETYPE_NOCLIP;
+											ent->client->pers.health = 100;
+											ent->health = 100;
+											ent->deadflag = DEAD_NO;
+											gi.linkentity(ent);
+											safe_bprintf(PRINT_HIGH, "%s became a spectator\n", ent->client->pers.netname);
+										}
+										else
+										{
+					                        ent->client->chase_mode = 0;
+											ent->client->chase_target = NULL;
+											ent->client->desired_fov = 90;
+											ent->client->ps.fov = 90; // FB 5/31/99 added
+											ent->client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
+											ent->solid = SOLID_BBOX;
+											gi.linkentity(ent);
+											//safe_bprintf(PRINT_HIGH, "%s rejoined the game\n", ent->client->pers.netname);
+											respawn(ent);
+										}
                                 }
                         }
                 }

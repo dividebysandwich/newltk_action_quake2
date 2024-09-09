@@ -136,6 +136,7 @@ void ACEAI_Think (edict_t *self)
 	if(VectorLength(self->velocity) > 37) //
 		self->suicide_timeout = level.time + 10.0;
 
+
 	if(self->suicide_timeout < level.time && !teamplay->value)
 	{
 		self->health = 0;

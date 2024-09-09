@@ -211,16 +211,35 @@ void InitGame (void)
         filterban = gi.cvar("filterban", "1", 0);
 //FIREBLADE
 
+        minplayers = gi.cvar("minplayers", "0", CVAR_SERVERINFO);
         newsounds = gi.cvar("newsounds", "1", CVAR_SERVERINFO);
         announcer = gi.cvar("announcer", "1", CVAR_SERVERINFO);
         m4_spread = gi.cvar("m4_spread", "300", CVAR_SERVERINFO);
-		mk23_spread = gi.cvar("mk23_spread", "140", CVAR_SERVERINFO);
-		mp5_spread = gi.cvar("mp5_spread", "250", CVAR_SERVERINFO);
-		dual_spread = gi.cvar("dual_spread", "300", CVAR_SERVERINFO);
-		ltk_jumpy = gi.cvar("ltk_jumpy", "1", CVAR_SERVERINFO);
+	mk23_spread = gi.cvar("mk23_spread", "140", CVAR_SERVERINFO);
+	mp5_spread = gi.cvar("mp5_spread", "250", CVAR_SERVERINFO);
+	dual_spread = gi.cvar("dual_spread", "300", CVAR_SERVERINFO);
+	ltk_jumpy = gi.cvar("ltk_jumpy", "1", CVAR_SERVERINFO);
 
 
-		needpass = gi.cvar("needpass", "0", CVAR_SERVERINFO);
+//PG BUND - BEGIN
+	use_voice = gi.cvar("use_voice", "1", CVAR_SERVERINFO|CVAR_LATCH);
+	//use_friendlyfire = gi.cvar("use_friendlyfire", "0", CVAR_SERVERINFO);
+	//ff_maxkills = gi.cvar("ff_maxkills", "6", 0);
+	//ff_kickat = gi.cvar("ff_kickat", "10", 0);
+ // ff_tempban = gi.cvar("ff_tempban", "1", 0);		//commented out for AQ1.52 FF compat. -TempFile 7/25/99
+	
+	ppl_idletime = gi.cvar("ppl_idletime","15", CVAR_SERVERINFO);
+	use_tourney = gi.cvar("use_tourney", "0", CVAR_SERVERINFO|CVAR_LATCH);
+  use_kickvote = gi.cvar("use_kickvote", "1", CVAR_SERVERINFO);
+  use_mapvote = gi.cvar("use_mapvote", "1", CVAR_SERVERINFO);  
+//PG BUND - END
+
+  //tempfile
+  sv_gib = gi.cvar("sv_gib", "0", CVAR_SERVERINFO);
+  sv_allowcrlf = gi.cvar("sv_allowcrlf", "1", CVAR_SERVERINFO);
+  //tempfile
+
+	needpass = gi.cvar("needpass", "0", CVAR_SERVERINFO);
         radiolog = gi.cvar("radiolog", "0", 0);
         teamplay = gi.cvar ("teamplay", "0", CVAR_SERVERINFO|CVAR_LATCH);
         motd_time = gi.cvar("motd_time", "2", 0);
@@ -306,6 +325,8 @@ void InitGame (void)
         game.maxclients = maxclients->value;
         game.clients = gi.TagMalloc (game.maxclients * sizeof(game.clients[0]), TAG_GAME);
         globals.num_edicts = game.maxclients+1;
+  //PG BUND - must be at end of gameinit:
+  vInitGame();
 }
 
 //=========================================================

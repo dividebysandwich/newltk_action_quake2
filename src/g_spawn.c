@@ -1238,6 +1238,12 @@ void SP_worldspawn (edict_t *ent)
                 gi.imageindex(team2_skin_index);
         }
         PrecacheRadioSounds();
+//PG BUND - Begin
+       	PrecacheUserSounds();
+       	DescListInit(level.mapname);
+       	TourneyInit();
+       	vInitLevel();
+//PG BUND - End
 
         team_round_going = 0;
         lights_camera_action = 0;

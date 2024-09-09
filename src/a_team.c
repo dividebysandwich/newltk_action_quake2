@@ -30,6 +30,7 @@ int rulecheckfrequency = 0;     // accumulator variable for checking rules every
 int lights_camera_action = 0;   // countdown variable for "lights...camera...action!" 
 int holding_on_tie_check = 0;   // when a team "wins", countdown for a bit and wait...
 int current_round_length = 0;   // frames that the current team round has lasted
+int round_delay_time = 0;       // time gap between round end and new round
 int announce_one = 0;
 int lastannounce = 0;
 
@@ -196,6 +197,8 @@ void SelectWeapon2(edict_t *ent, pmenu_t *p)
         ent->client->resp.weapon = FindItem(MP5_NAME);
         PMenu_Close(ent);
         OpenItemMenu(ent);
+//PG BUND
+        stuffcmd(ent, "play weapons/mp5slide.wav\n");
 }
 
 void SelectWeapon3(edict_t *ent, pmenu_t *p)
@@ -203,6 +206,8 @@ void SelectWeapon3(edict_t *ent, pmenu_t *p)
         ent->client->resp.weapon = FindItem(M3_NAME);
         PMenu_Close(ent);
         OpenItemMenu(ent);
+//PG BUND
+        stuffcmd(ent, "play weapons/m3in.wav\n");
 }
 
 void SelectWeapon4(edict_t *ent, pmenu_t *p)
@@ -210,6 +215,8 @@ void SelectWeapon4(edict_t *ent, pmenu_t *p)
         ent->client->resp.weapon = FindItem(HC_NAME);
         PMenu_Close(ent);
         OpenItemMenu(ent);
+//PG BUND
+        stuffcmd(ent, "play weapons/cclose.wav\n");        
 }
 
 void SelectWeapon5(edict_t *ent, pmenu_t *p)
@@ -217,6 +224,8 @@ void SelectWeapon5(edict_t *ent, pmenu_t *p)
         ent->client->resp.weapon = FindItem(SNIPER_NAME);
         PMenu_Close(ent);
         OpenItemMenu(ent);
+//PG BUND
+        stuffcmd(ent, "play weapons/ssgbolt.wav\n");
 }
 
 void SelectWeapon6(edict_t *ent, pmenu_t *p)
@@ -224,6 +233,8 @@ void SelectWeapon6(edict_t *ent, pmenu_t *p)
         ent->client->resp.weapon = FindItem(M4_NAME);
         PMenu_Close(ent);
         OpenItemMenu(ent);
+//PG BUND
+        stuffcmd(ent, "play weapons/m4a1slide.wav\n");
 }
 
 void SelectWeapon0(edict_t *ent, pmenu_t *p)
@@ -231,6 +242,8 @@ void SelectWeapon0(edict_t *ent, pmenu_t *p)
         ent->client->resp.weapon = FindItem(KNIFE_NAME);
         PMenu_Close(ent);
         OpenItemMenu(ent);
+//PG BUND
+        stuffcmd(ent, "play weapons/stab.wav\n");
 }
 
 void SelectWeapon9(edict_t *ent, pmenu_t *p)
@@ -238,36 +251,48 @@ void SelectWeapon9(edict_t *ent, pmenu_t *p)
         ent->client->resp.weapon = FindItem(DUAL_NAME);
         PMenu_Close(ent);
         OpenItemMenu(ent);
+//PG BUND
+        stuffcmd(ent, "play weapons/mk23slide.wav\n");
 }
 
 void SelectItem1(edict_t *ent, pmenu_t *p)
 {
         ent->client->resp.item = FindItem(KEV_NAME);
         PMenu_Close(ent);
+//PG BUND
+        stuffcmd(ent, "play misc/veston.wav\n");
 }
 
 void SelectItem2(edict_t *ent, pmenu_t *p)
 {
         ent->client->resp.item = FindItem(LASER_NAME);
         PMenu_Close(ent);
+//PG BUND
+        stuffcmd(ent, "play misc/lasersight.wav\n");
 }
 
 void SelectItem3(edict_t *ent, pmenu_t *p)
 {
         ent->client->resp.item = FindItem(SLIP_NAME);
         PMenu_Close(ent);
+//PG BUND
+        stuffcmd(ent, "play misc/veston.wav\n");
 }
 
 void SelectItem4(edict_t *ent, pmenu_t *p)
 {
         ent->client->resp.item = FindItem(SIL_NAME);
         PMenu_Close(ent);
+//PG BUND
+        stuffcmd(ent, "play misc/screw.wav");
 }
 
 void SelectItem5(edict_t *ent, pmenu_t *p)
 {
         ent->client->resp.item = FindItem(BAND_NAME);
         PMenu_Close(ent);
+//PG BUND
+        stuffcmd(ent, "play misc/veston.wav");
 }
 
 void CreditsReturnToMain(edict_t *ent, pmenu_t *p)
@@ -275,6 +300,13 @@ void CreditsReturnToMain(edict_t *ent, pmenu_t *p)
         PMenu_Close(ent);
         OpenJoinMenu(ent);
 }
+
+//PG BUND BEGIN
+void DoAGoodie(edict_t *ent, pmenu_t *p)
+{
+	gi.sound(ent, CHAN_VOICE, gi.soundindex("gladiator/sight.wav"), 1, ATTN_NORM, 0);
+}
+//PG BUND END
 
 pmenu_t creditsmenu[] = {
   { "*Action Quake 2",                      PMENU_ALIGN_CENTER, NULL, NULL },
@@ -299,10 +331,15 @@ pmenu_t creditsmenu[] = {
 
 
   { NULL,                               PMENU_ALIGN_LEFT, NULL, NULL },
-  { "Return to main menu",              PMENU_ALIGN_LEFT, NULL, CreditsReturnToMain },
-  { NULL,                               PMENU_ALIGN_LEFT, NULL, NULL },
-  { "TAB to exit menu",    PMENU_ALIGN_LEFT, NULL, NULL },
+  { "Return to main menu",              PMENU_ALIGN_CENTER, NULL, CreditsReturnToMain },
+//  { NULL,                               PMENU_ALIGN_LEFT, NULL, NULL },
+  { "TAB to exit menu",    PMENU_ALIGN_CENTER, NULL, NULL },
   { NULL,                                 PMENU_ALIGN_LEFT, NULL, NULL },
+//PG BUND BEGIN
+  { "*PB Edition by PG BUND[Rock]",             PMENU_ALIGN_CENTER, NULL, DoAGoodie },
+  { "*and =DIE=TempFile",						PMENU_ALIGN_CENTER, NULL, DoAGoodie },
+  { "LTK improvements by Werewolf",             PMENU_ALIGN_CENTER, NULL, DoAGoodie },
+//PG BUND END
   { "v" ACTION_VERSION,       PMENU_ALIGN_RIGHT, NULL, NULL },
 };
 
@@ -367,6 +404,7 @@ void CreditsMenu(edict_t *ent, pmenu_t *p)
 {
         PMenu_Close(ent);
         PMenu_Open(ent, creditsmenu, 4, sizeof(creditsmenu) / sizeof(pmenu_t));
+        stuffcmd(ent, "play world/elv.wav\n");
 }
 
 char *TeamName(int team)
@@ -405,6 +443,13 @@ void Team_f(edict_t *ent)
         char *t;
         int desired_team;
 
+//PG BUND - BEGIN (Tourney extension)
+        if (use_tourney->value)
+        {
+          gi.cprintf(ent, PRINT_MEDIUM, "Currently running tourney mod, team selection is disabled.");
+          return;
+        }
+//PG BUND - END (Tourney extension)        
         t = gi.args();
         if (!*t)
         {
@@ -641,6 +686,14 @@ void OpenJoinMenu(edict_t *ent)
 {
         int team;
 
+//PG BUND - BEGIN (Tourney extension)
+  if (use_tourney->value)
+  {
+    OpenWeaponMenu(ent);
+    return;
+  }
+//PG BUND - END (Tourney extension)
+
         team = UpdateJoinMenu(ent);
         if (team == TEAM1)
                 team = 3;
@@ -749,6 +802,11 @@ qboolean BothTeamsHavePlayers()
         int onteam1 = 0, onteam2 = 0, i;
         edict_t *ent;
 
+        if (use_tourney->value)
+        {
+          return (LastOpponent > 1);
+        }
+
         for (i = 0; i < game.maxclients; i++)
         {
                 ent = &g_edicts[1+i];
@@ -848,6 +906,7 @@ void SpawnPlayers()
                 ent = &g_edicts[1+i];
                 if (ent->inuse && ent->client->resp.team != NOTEAM)
                 {
+		  ent->client->resp.last_killed_target = NULL;
 // ACEBOT CHANGE
 				if( !stricmp(ent->classname, "bot") )
 					ACESP_PutClientInServer( ent, true,ent->client->resp.team);
@@ -870,11 +929,19 @@ void StartLCA()
 {
         CleanLevel();
    
+        if (use_tourney->value)
+        {
+          lights_camera_action = TourneySetTime(T_SPAWN);
+          TourneyTimeEvent(T_SPAWN, lights_camera_action);
+        }
+        else
+        {
         CenterPrintAll("LIGHTS...\n");
         gi.sound(&g_edicts[0], CHAN_VOICE | CHAN_NO_PHS_ADD, 
                 gi.soundindex("atl/lights.wav"), 1.0, ATTN_NONE, 0.0);
-        lights_camera_action = 41;
-        SpawnPlayers();
+        lights_camera_action = 43;
+        }
+		SpawnPlayers();
 }
 
 
@@ -909,20 +976,34 @@ edict_t *FindOverlap(edict_t *ent, edict_t *last_overlap)
 
 void ContinueLCA()
 {
-        if (lights_camera_action == 21)
+  if (use_tourney->value)
+  {
+    TourneyTimeEvent(T_SPAWN, lights_camera_action);
+    if (lights_camera_action == 1)
+    { 
+      StartRound();
+    }    
+  }
+  else
+  {
+        if (lights_camera_action == 23)
         {
                 CenterPrintAll("CAMERA...\n");
                 gi.sound(&g_edicts[0], CHAN_VOICE | CHAN_NO_PHS_ADD, 
                 gi.soundindex("atl/camera.wav"), 1.0, ATTN_NONE, 0.0);
+        }               
+        else if (lights_camera_action == 3)
+        {
+          CenterPrintAll("ACTION!\n");
+          gi.sound(&g_edicts[0], CHAN_VOICE | CHAN_NO_PHS_ADD, 
+          gi.soundindex("atl/action.wav"), 1.0, ATTN_NONE, 0.0);
+		}
+		else if (lights_camera_action == 1)
+		{
+          StartRound();
         }
-                else if (lights_camera_action == 1)
-        { 
-                CenterPrintAll("ACTION!\n");
-                gi.sound(&g_edicts[0], CHAN_VOICE | CHAN_NO_PHS_ADD, 
-                gi.soundindex("atl/action.wav"), 1.0, ATTN_NONE, 0.0);
-                StartRound();
-        }
-        lights_camera_action--;
+  }  
+  lights_camera_action--;
 }
 
 void MakeAllLivePlayersObservers()
@@ -937,7 +1018,10 @@ void MakeAllLivePlayersObservers()
                         continue;
                 saveteam = ent->client->resp.team;
                 ent->client->resp.team = NOTEAM;
-                PutClientInServer(ent);
+//		if( !stricmp(ent->classname, "bot") )
+//			ACESP_PutClientInServer( ent, true,ent->client->resp.team);
+//		else
+			PutClientInServer(ent);
                 ent->client->resp.team = saveteam;
         }
 }
@@ -945,6 +1029,8 @@ void MakeAllLivePlayersObservers()
 // WonGame: returns true if we're exiting the level.
 int WonGame(int winner)
 {
+  edict_t *player;
+
         safe_bprintf(PRINT_HIGH, "The round is over:\n");
 
         if (winner == WINNER_TIE)
@@ -957,14 +1043,38 @@ int WonGame(int winner)
                 if (winner == WINNER_TEAM1)
                 {
                         safe_bprintf(PRINT_HIGH, "%s won!\n", TeamName(TEAM1));
+                  if (use_tourney->value)
+                  {
+                    player = TourneyFindPlayer(1);
+                    if (player)
+                    {
+                      safe_bprintf(PRINT_HIGH, "%s was victorious!\n", player->client->pers.netname);                      
+                      TourneyWinner(player);
+                    }
+                  }
+                  else
+                  {
+                        safe_bprintf(PRINT_HIGH, "%s won!\n", TeamName(TEAM1));
                         team1_score++;
-						SoundAnnounce(1);
+			SoundAnnounce(1);
+                  }
                 }
                         else
                 {
-                        safe_bprintf(PRINT_HIGH, "%s won!\n", TeamName(TEAM2));
+                  if (use_tourney->value)
+                  {   
+                    player = TourneyFindPlayer(NextOpponent);
+                    if (player)
+                    {
+                      safe_bprintf(PRINT_HIGH, "%s was victorious!\n", player->client->pers.netname);
+                      TourneyWinner(player);
+                    }
+                  }
+                  else
+                  {
                         team2_score++;
-						SoundAnnounce(2);
+			SoundAnnounce(2);
+		  }
                 }
         }
 
@@ -990,6 +1100,16 @@ int WonGame(int winner)
                 }
         }
 
+//PG BUND - BEGIN
+  if (vCheckVote() == true)
+  {
+    EndDMLevel();
+    team_round_going = team_round_countdown = team_game_going = 0;	    
+    return 1;    
+  }
+	vNewRound();	
+//PG BUND - END
+
         return 0;
 }
 
@@ -998,6 +1118,21 @@ void CheckTeamRules()
 {
         int winner;
         int checked_tie = 0;
+
+
+  if (round_delay_time && use_tourney->value)
+  {                    
+    TourneyTimeEvent(T_END, round_delay_time);    
+    round_delay_time--;
+    if (!round_delay_time)
+    {
+      TourneyNewRound();
+      team_round_countdown = TourneySetTime(T_RSTART);
+      TourneyTimeEvent(T_START, team_round_countdown);
+    }
+    return;
+  }
+
 
         if (lights_camera_action)
         {
@@ -1033,9 +1168,23 @@ void CheckTeamRules()
         }
                 else
         {
-                if (team_round_countdown)
-                        team_round_countdown--;
+    if (team_round_countdown)
+    {
+      team_round_countdown--;
+      if (use_tourney->value)
+      {  
+        TourneyTimeEvent(T_START, team_round_countdown);
+      }
+      else
+      {
+        if (team_round_countdown == 101)
+        {
+          gi.sound(&g_edicts[0], CHAN_VOICE | CHAN_NO_PHS_ADD, 
+            gi.soundindex("world/10_0.wav"), 1.0, ATTN_NONE, 0.0);
         }
+      }
+    }
+  }
 
         // check these rules every 1.5 seconds...
         rulecheckfrequency++;
@@ -1055,12 +1204,30 @@ void CheckTeamRules()
                         }
                 }
 
+//PG BUND - BEGIN
+    if (vCheckVote() == true)
+    {
+      EndDMLevel();
+      team_round_going = team_round_countdown = team_game_going = 0;
+      return;      
+    }
+//PG BUND - END
+
                 if (!team_round_countdown)
                 {
                         if (BothTeamsHavePlayers())
                         {
-                                CenterPrintAll("The round will begin in 10 seconds!\n");
-                                team_round_countdown = 101;
+        if (use_tourney->value)
+        {
+          TourneyNewRound();          
+          team_round_countdown = TourneySetTime(T_START);
+          TourneyTimeEvent(T_START, team_round_countdown);
+        }
+        else 
+        {
+          CenterPrintAll("The round will begin in 10 seconds!\n");
+          team_round_countdown = 101;
+        }
                         }
                 }
         }
@@ -1078,6 +1245,11 @@ void CheckTeamRules()
                         team_round_going = 0;
                         lights_camera_action = 0;
                         holding_on_tie_check = 0;
+		      if (use_tourney->value)
+		      {               
+		        round_delay_time = TourneySetTime(T_END);
+		      }
+		      else
                         team_round_countdown = 51;		//Was 71
                         return;
                 }
@@ -1434,6 +1606,9 @@ void A_ScoreboardMessage (edict_t *ent, edict_t *killer)
 void TallyEndOfLevelTeamScores(void)
 {
         int i;
+
+    		gi.sound(&g_edicts[0], CHAN_VOICE | CHAN_NO_PHS_ADD, 
+		      gi.soundindex("world/xian1.wav"), 1.0, ATTN_NONE, 0.0);
 
         team1_total = team2_total = 0;
         for (i = 0; i < maxclients->value; i++)

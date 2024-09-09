@@ -5,14 +5,17 @@
 
 ARCH=i386
 CC=gcc
-BASE_CFLAGS=-Dstricmp=strcasecmp
+BASE_CFLAGS=-Dstricmp=strcasecmp -DUNIX_FS
 
 #use these cflags to optimize it
 #CFLAGS=$(BASE_CFLAGS) -m486 -O6 -ffast-math -funroll-loops \
 #	-fomit-frame-pointer -fexpensive-optimizations -malign-loops=2 \
 #	-malign-jumps=2 -malign-functions=2
 #use these when debugging 
-CFLAGS=$(BASE_CFLAGS) -g
+#CFLAGS=$(BASE_CFLAGS) -g
+
+CFLAGS=$(BASE_CFLAGS) -O3 -ffast-math -fomit-frame-pointer -m486
+
 
 LDFLAGS=-ldl -lm
 SHLIBEXT=so
@@ -31,11 +34,12 @@ DO_CC=$(CC) $(CFLAGS) $(SHLIBCFLAGS) -o $@ -c $<
 
 GAME_OBJS = \
 	g_ai.o g_cmds.o g_combat.o g_func.o g_items.o g_main.o g_misc.o \
-	g_monster.o g_phys.o g_save.o g_spawn.o g_svcmds.o \
+	g_monster.o g_phys.o g_save.o g_spawn.o g_svcmds.o g_xmisc.o \
 	g_target.o g_trigger.o g_turret.o g_utils.o g_weapon.o g_chase.o \
 	p_client.o p_hud.o p_trail.o p_view.o p_weapon.o q_shared.o \
 	m_move.o a_team.o a_game.o a_items.o a_cmds.o a_radio.o a_menu.o \
-	cgf_sfx_glass.o a_doorkick.o
+	a_vote.o a_xcmds.o a_xgame.o a_ban.o a_xmenu.o a_xvote.o a_tourney.o \
+	a_doorkick.o cgf_sfx_glass.o
 
 game$(ARCH).$(SHLIBEXT) : $(GAME_OBJS)
 	$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(GAME_OBJS)

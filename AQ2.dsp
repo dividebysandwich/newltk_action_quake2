@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AQ2_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AQ2_EXPORTS" /D "CGF_FOG" /FR /YX /FD /c
+# ADD CPP /nologo /MT /W2 /GX /O2 /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AQ2_EXPORTS" /D "CGF_FOG" /FR /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
@@ -53,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib opengl32.lib /nologo /dll /machine:I386 /out:"c:\quake2\action\gamex86.dll"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib opengl32.lib /nologo /dll /machine:I386 /out:"c:\games\quake2\action\gamex86.dll"
 
 !ELSEIF  "$(CFG)" == "AQ2 - Win32 Debug"
 
@@ -79,7 +79,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib opengl32.lib /nologo /dll /debug /machine:I386 /out:"c:\quake2\action\gamex86.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib opengl32.lib /nologo /dll /debug /machine:I386 /out:"c:\games\quake2\action\gamex86.dll" /pdbtype:sept
 
 !ENDIF 
 
@@ -90,6 +90,10 @@ LINK32=link.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Source File
+
+SOURCE=.\src\a_ban.c
+# End Source File
 # Begin Source File
 
 SOURCE=.\src\a_cmds.c
@@ -117,6 +121,30 @@ SOURCE=.\src\a_radio.c
 # Begin Source File
 
 SOURCE=.\src\a_team.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\a_tourney.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\a_vote.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\a_xcmds.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\a_xgame.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\a_xmenu.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\a_xvote.c
 # End Source File
 # Begin Source File
 
@@ -272,6 +300,10 @@ SOURCE=.\src\g_weapon.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\g_xmisc.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\game.def
 # End Source File
 # Begin Source File
@@ -308,6 +340,10 @@ SOURCE=.\src\q_shared.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\src\a_ban.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\a_game.h
 # End Source File
 # Begin Source File
@@ -321,6 +357,30 @@ SOURCE=.\src\a_radio.h
 # Begin Source File
 
 SOURCE=.\src\a_team.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\a_tourney.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\a_vote.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\a_xcmds.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\a_xgame.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\a_xmenu.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\a_xvote.h
 # End Source File
 # Begin Source File
 
@@ -352,6 +412,10 @@ SOURCE=.\src\g_local.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\g_xmisc.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\game.h
 # End Source File
 # Begin Source File
@@ -366,18 +430,6 @@ SOURCE=.\src\q_shared.h
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
-# End Group
-# Begin Group "Docs"
-
-# PROP Default_Filter "*.txt"
-# Begin Source File
-
-SOURCE=.\history.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\LTKBots.txt
-# End Source File
 # End Group
 # End Target
 # End Project

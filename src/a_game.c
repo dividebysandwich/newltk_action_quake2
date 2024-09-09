@@ -192,7 +192,12 @@ void PrintMOTD(edict_t *ent)
                 // Line for game type
                 if (teamplay->value)
                 {
-                        server_type = "teamplay";
+	          if (!use_tourney->value) // Added "->value", duh	-TempFile
+			  {
+					server_type = "team game";
+			  }
+              else
+              server_type = "tourney";
                 }
                         else
                 {
@@ -996,6 +1001,10 @@ void GetNearbyTeammates(edict_t *self, char *buf)
         }
 }
 
+//PG BUND - BEGIN
+//ParseSayText is redefined and extended in a_xgame.c
+/*
+
 char *SeekBufEnd(char *buf)
 {
         while (*buf != 0)
@@ -1063,4 +1072,6 @@ void ParseSayText(edict_t *ent, char *text)
         text[300] = 0; // in case it's 300
 }
 
+*/
+//PG BUND - END
 
