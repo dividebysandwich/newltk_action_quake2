@@ -1,0 +1,140 @@
+Modifications on LTK bot 1.22
+Revision 6
+Josef Jahn
+http://www.playspoon.com
+
+
+
+This is a modified version of the 1.22 LTK bot. Except for the stealth slippers, nothing was changed in terms of gameplay, just the server operator has the possibility to set a different spreading value for the M4. The bots themselves have been improved to the point where they almost never get stuck at doors anymore. This is especially great for maps like "Actcity3" and even "Airport", since in the original version the game would be actually stopped since the bots hung at the doors forever.
+
+
+-----------------------------------------------------------------------------
+
+NEW CONSOLE VARIABLES:
+
+Note: These variables can only be set by the server.
+
+
+announcer [0/1]
+Toggles the announcement voice on or off
+
+newsounds [0/1]
+Toggles the new weapon sounds on or off
+
+placenode
+This is more of a command rather than a cvar, and can be used to manually place nodes at strategic positions. Use this if your bots fall off small walkways or such, and manually add nodes to where the bots should go. This only works while ltk_routing is set to "1"
+
+placetrigger
+Another command similar to "placenode", only that this is intended to be placed in front of pushbuttons. When a bot gets to this place he will run forward, thus triggering whatever pushbutton is in front of him. May be of help in elevators and stuff.
+
+ltk_jumpy [1] 
+Toggle (0 or 1) variable that sets whether the bots should jump around more or not.
+
+mk23_spread [140]
+Sets spreading for the H&K MK23 pistol. A lower value means that the gun will fire more exact, a higher value.. well, you get the picture. 
+I personally like to set the spreading to 100 since I'm quite a good IPSC IRL. The default value is the same as in the original ActionQuake. I prefer the Sig 226 line of pistols for their better accuracy.
+
+dual_spread [300]
+Spreading of the Akimbo Pistols. The double guns would deserve a better hit rate too, but I leave that up to your discretion.
+
+mp5_spread [250]
+Spreading of the H&K MP5. The short barrel and ammunition type (in AQ the 10mm variant is used) justifies the standard spread value. 
+I wouldn't fiddle with that, it's already perfect. Just like the real thing. Maybe the body damage should've been raised a bit, since you definitely wouldn't survive in real-life with a half clip of 9mm in your stomach.
+
+m4_spread [300]
+Spreading of the Colt M4 (whose predecessor, the M16, wasn't actually constructed by Colt, but by ArmaLite! Colt just licensed that design and cashed billions!) 
+I don't recommend anything here, either leave it at default (which is fine for most people) or set it lower (for less chance of M4 headshots) but since I've never fired a M4 - or even held one in my hands, other than airsoft maybe - I just don't know if it's right or not. The traveling sure is a bit exaggerated however, I've fired bigger calibers without having such problems (and I'm NOT the strong type)
+
+-----------------------------------------------------------------------------
+
+
+
+Here's what I changed:
+
+Revision 6:
+
+x) Improved fleeing AI a bit.
+
+x) Improved Jumping
+
+x) Added toggleable new weapon sounds (cvar "newsounds")
+
+
+Revision 5:
+
+x) Added announcer voice. Toggleable via cvar "announcer"
+
+
+Revision 4:
+
+x) Bots now also retreat if possible
+
+x) Bots crouch while firing, given that they have either the MP5, M4 and NO lasersight. Improves their accuracy with these weapons greatly. Crouching is only active if ltk_skill is greater than 4.
+
+x) Added "placetrigger" command.
+
+x) Tried to improve jump code. May reintroduce the flying... 
+
+
+Revision 3:
+
+x) Fixed bot's "flying" around
+
+x) Added "placenode" command
+
+x) Added jump on stuck.
+
+
+Revision 2:
+
+x) Made bots use grenades. This took me a lot of work, they even throw them a bit higher to achieve longer ranges. Sometimes they still walk into them though.
+
+x) Added crouching while climbing down ladders. Not yet tested
+
+x) Added cvar for jumpy behaviour
+
+x) Added cvar for adjusting aim spread for the MP5, MK23 and the Akimbos.
+
+x) Hopefully fixed the "doors staying non-solid" bug. Needs testing too.
+
+
+
+Revision 1:
+
+x) Fixed door behaviour for bots. Works 90% of the time, however *sometimes* bots still do spend some time at doors. IMHO it's a vast improvement over the original code. Here's what I did in detail:
+ o   Added many checks for possible doors
+ o   Made the bots walk backwards more after opening.
+ o   Inhibited the "door retrigger", i.e. you can't manually close a door anymore. Sorry I really had to do this.
+All that performed well as long as one single bot was involved in dealing with the door. Then I found that there's really no efficient way to have groups of bots stay clear of the door until it's fully opened. So I took a rather drastic measure:
+
+ o   Made doors "non-solid" during their opening animation. This allows groups of bots to pass through a single door without problems. It really is a hack however, and sometimes doesn't look pretty. But at least it works for a difference.
+
+x) Improved roaming code, almost no random walkaround anymore.
+
+x) Added friendly fire check. Bots won't accidentally kill teammates all the time anymore
+
+x) Added cvar "m4_spread" for setting M4 bullet spreading. Defaults to the standard 300 value
+
+x) Beefed up Stealth slippers: Players won't get the crippled walk when they wear these. I think that's ok with game balance, since it gives people more incentive to use stealth slippers. Idea from the ETE AQ mod.
+
+x) Increased bot sniper accuracy, made snipers of skill level 10 *very* lethal
+
+x) Bots use sniper zoom
+
+x) Changed default ltk_skill to 5
+
+x) Dead Bots don't hog CPU time anymore
+
+x) Start delay changed 10 seconds from the original 20 seconds
+
+x) Decreased delay between teamplay rounds a little
+
+
+
+One final game killer remains: complex elevators with switches and multiple floors, like in "Chriscity3". The bots just don't know how to deal with them. However, I hope you find this version more playable than the original. At least I do :)
+
+
+
+werewolf@playspoon.com
+
+
